@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name="joblog",
-    version="1.0.2",
+    version="1.0.3",
     description="Standardized logging for batch jobs and others.",
     long_description="""The Joblog library provides a simple logging system.
     It’s ideal for batch jobs but can also be used for longer running systems.
