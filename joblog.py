@@ -5,6 +5,7 @@
 #
 
 import atexit
+import ctypes
 import logging
 import os
 import os.path
@@ -57,12 +58,29 @@ def setup_logging():
 
 def read_io_stats():
     io_stats = {"rchar": 0, "wchar": 0}
-    try:
-        for line in open("/proc/self/io", "r"):
-            key, value = line.rstrip().split(": ")
-            io_stats[key] = int(value)
-    except FileNotFoundError as err:
-        logging.warn("(joblog) unable to read I/O stats: %s: %s", type(err).__name__, err)
+    if sys.platform == "linux":
+        # On Linux, read from /proc.
+        try:
+            for line in open("/proc/self/io", "r"):
+                key, value = line.rstrip().split(": ")
+                io_stats[key] = int(value)
+        except FileNotFoundError as err:
+            logging.warn("(joblog) unable to read I/O stats: %s: %s", type(err).__name__, err)
+    elif sys.platform == "darwin":
+        try:
+            # On OS X, use proc_pid_rusage().
+            libproc = ctypes.cdll.LoadLibrary("libproc.dylib")
+            class rusage_info_v2(ctypes.Structure):
+                _fields_ = [("ri_uuid", ctypes.c_ubyte * 16),
+                            ("ri_item", ctypes.c_ulonglong * 18)]
+            buffer = rusage_info_v2()
+            libproc.proc_pid_rusage(os.getpid(), 2, ctypes.byref(buffer))
+            io_stats["rchar"] = buffer.ri_item[16]
+            io_stats["wchar"] = buffer.ri_item[17]
+        except OSError as err:
+            logging.warn("(joblog) unable to read I/O stats: %s: %s", type(err).__name__, err)
+    else:
+        logging.warn("(joblog) unable to read I/O stats: unsupported platform %s", sys.platform)
     return io_stats
 
 def format_size(i):
