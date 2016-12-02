@@ -56,10 +56,13 @@ def setup_logging():
     return name
 
 def read_io_stats():
-    io_stats = {}
-    for line in open("/proc/self/io", "r"):
-        key, value = line.rstrip().split(": ")
-        io_stats[key] = int(value)
+    io_stats = {"rchar": 0, "wchar": 0}
+    try:
+        for line in open("/proc/self/io", "r"):
+            key, value = line.rstrip().split(": ")
+            io_stats[key] = int(value)
+    except FileNotFoundError as err:
+        logging.warn("(joblog) unable to read I/O stats: %s: %s", type(err).__name__, err)
     return io_stats
 
 def format_size(i):
