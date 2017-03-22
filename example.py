@@ -7,6 +7,7 @@ import joblog
 import logging
 import random
 
+joblog.init()
 logging.info("example in Python")
 
 total = random.randint(1000000, 2000000)

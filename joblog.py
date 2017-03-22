@@ -16,6 +16,14 @@ import sys
 import time
 import traceback
 
+def init(logs_dir="logs"):
+    logfile_name = setup_logging(logs_dir)
+    logging.info("start %s: %s %s %s, hostname %s, user %i(%s)", program_name,
+            platform.python_implementation(), platform.python_version(), platform.system(),
+            platform.node(), os.getuid(), pwd.getpwuid(os.getuid()).pw_name)
+    logging.info("invoked as: %s\n", " ".join(original_argv))
+    atexit.register(exit_handler)
+
 class JoblogFormatter(logging.Formatter):
     def format(self, record):
         datetime = time.strftime("%m%d %H%M%S", time.gmtime(record.created))
@@ -32,9 +40,9 @@ class JoblogFormatter(logging.Formatter):
                 message.append(prefix + "... " + line)
         return "\n".join(message)
 
-def setup_logging():
+def setup_logging(logs_dir):
     now = time.gmtime()
-    directory = os.path.join("logs", time.strftime("%Y", now), time.strftime("%Y%m", now),
+    directory = os.path.join(logs_dir, time.strftime("%Y", now), time.strftime("%Y%m", now),
                              time.strftime("%Y%m%d", now))
     try:
         os.makedirs(directory)
@@ -111,10 +119,4 @@ if hasattr(time, "monotonic"):
     time_fn = time.monotonic  # Python 3.3+
 start_time = time_fn()
 program_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-logfile_name = setup_logging()
-logging.info("start %s: %s %s %s, hostname %s, user %i(%s)", program_name,
-        platform.python_implementation(), platform.python_version(), platform.system(),
-        platform.node(), os.getuid(), pwd.getpwuid(os.getuid()).pw_name)
-logging.info("invoked as: %s\n", " ".join(sys.argv))
-
-atexit.register(exit_handler)
+original_argv = tuple(sys.argv)  # Copy argv.

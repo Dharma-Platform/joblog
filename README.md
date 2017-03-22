@@ -72,6 +72,7 @@ pip3 install git+https://github.com/jamesbursa/joblog
 import joblog
 import logging
 
+joblog.init()  # Optional: supply logs_dir="...".
 logging.info("%i/%i (%.1f%%) processed", i + 1, total, 100.0 * (i + 1) / total)
 logging.warn("all done")
 ```
