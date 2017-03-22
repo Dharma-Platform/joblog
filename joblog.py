@@ -17,6 +17,7 @@ import time
 import traceback
 
 def init(logs_dir="logs"):
+    global logfile_name
     logfile_name = setup_logging(logs_dir)
     logging.info("start %s: %s %s %s, hostname %s, user %i(%s)", program_name,
             platform.python_implementation(), platform.python_version(), platform.system(),

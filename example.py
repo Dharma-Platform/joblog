@@ -21,3 +21,5 @@ try:
     x = 5 / 0
 except Exception:
     logging.exception("intentional exception")
+
+logging.info("log file was %s", joblog.logfile_name)
